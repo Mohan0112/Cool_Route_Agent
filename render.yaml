@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: coolroute-api
+    env: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: FORTYGUARD_API_KEY
+        sync: false
+      - key: FORTYGUARD_BASE_URL
+        value: https://api.fortyguard.com
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-flash-lite-latest
+      - key: DEMO_MODE
+        value: "false"
+      - key: CACHE_DB_PATH
+        value: ./data/app.db
+      - key: CORS_ORIGINS
+        value: https://coolroute-app.onrender.com
+      - key: NOMINATIM_BASE_URL
+        value: https://nominatim.openstreetmap.org
+      - key: MAX_AGENT_TURNS
+        value: "12"
+      - key: AGENT_TIMEOUT_S
+        value: "180"
+      - key: POLL_BACKOFF_S
+        value: "3,6,12,12,12"
+
+  - type: static
+    name: coolroute-app
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://coolroute-api.onrender.com
