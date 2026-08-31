@@ -53,7 +53,7 @@ export function CoolRoutePage() {
 
   return (
     <PageShell
-      title="CoolRoute Agent"
+      title="Sundodger"
       description="Like Google Maps, but it plans around heat: give it a start, an end, and a mode -- it geocodes both, pulls real street routes, measures real FortyGuard temperature data along each one, and recommends the coolest option."
     >
       <HowItWorks />
@@ -169,21 +169,27 @@ export function CoolRoutePage() {
       </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
-          <CardBody className="p-0">
-            {plan && plan.options.length > 0 ? (
-              <RouteMap
-                key={stream.runId}
-                options={plan.options}
-                originLabel={plan.origin_label}
-                destinationLabel={plan.destination_label}
-                height={480}
-              />
-            ) : (
-              <div className="flex h-[480px] items-center justify-center p-6 text-center text-sm text-[var(--text-muted)]">
-                Enter a trip above and run the agent to see routes here.
-              </div>
-            )}
+        {/* Grid items stretch, so this card grows to match the (usually taller) route-plan
+            column. The map therefore fills it rather than sitting at a fixed 480px and
+            leaving dead white space underneath. min-h keeps it from collapsing when the
+            plan column is short, and overflow-hidden clips the map to the rounded corners. */}
+        <Card className="flex flex-col overflow-hidden lg:col-span-3">
+          <CardBody className="flex-1 p-0">
+            <div className="h-[480px] min-h-[480px] lg:h-full">
+              {plan && plan.options.length > 0 ? (
+                <RouteMap
+                  key={stream.runId}
+                  options={plan.options}
+                  originLabel={plan.origin_label}
+                  destinationLabel={plan.destination_label}
+                  height="100%"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center p-6 text-center text-sm text-[var(--text-muted)]">
+                  Enter a trip above and run the agent to see routes here.
+                </div>
+              )}
+            </div>
           </CardBody>
         </Card>
 

@@ -21,7 +21,8 @@ interface RouteMapProps {
   options: RouteOption[]
   originLabel?: string
   destinationLabel?: string
-  height?: number
+  /** Number for a fixed pixel height, or a CSS length like "100%" to fill the parent. */
+  height?: number | string
 }
 
 const DEFAULT_CENTER: [number, number] = [33.4484, -112.074] // Phoenix, AZ

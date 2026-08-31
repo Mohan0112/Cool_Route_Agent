@@ -75,5 +75,82 @@ body {
 
 .leaflet-container {
   background: var(--surface-2);
-  border-radius: 0.75rem;
+  /* No border-radius here on purpose: the map now fills a card that clips with
+     overflow-hidden + rounded-2xl, and a second, tighter radius left visible crescents
+     of card background in each corner. */
+  /* Leaflet gives its own panes and controls z-index 400-800. .leaflet-container is
+     positioned but has z-index:auto, so it creates NO stacking context and those values
+     compete with the rest of the page -- which is how the map ended up painting on top of
+     the sticky NavBar. Pinning it to 0 traps every internal z-index inside the map. */
+  z-index: 0;
+  isolation: isolate;
+}
+
+/* --- Landing hero animations (referenced by inline styles in Hero.tsx) ------------- */
+
+/* Slow push-in that keeps a still photograph feeling alive for its few seconds on screen. */
+@keyframes sd-kenburns {
+  from {
+    transform: scale(1.04);
+  }
+  to {
+    transform: scale(1.13);
+  }
+}
+
+/* Fills the active slide indicator, so the auto-rotation is visibly on a timer
+   rather than appearing to jump at random. */
+@keyframes sd-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Entrance for each slide's headline block. */
+@keyframes sd-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The "there is more below" nudge on the scroll cue. */
+@keyframes sd-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Expanding halo behind the hero's scroll button, so it reads as "press me". */
+@keyframes sd-halo {
+  0% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.75);
+  }
 }
