@@ -14,7 +14,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="FortyGuard Track 6 -- CoolRoute Agent", lifespan=lifespan)
+app = FastAPI(title="FortyGuard Track 6 -- Sundodger", lifespan=lifespan)
 
 settings = get_settings()
 app.add_middleware(
