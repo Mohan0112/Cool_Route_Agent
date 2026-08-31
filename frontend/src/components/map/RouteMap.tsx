@@ -60,6 +60,8 @@ export function RouteMap({ options, originLabel, destinationLabel, height = 420 
       <TileLayer
         url={tileUrl}
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+        maxZoom={20}
+        subdomains="abcd"
       />
       {options.map((option, i) => (
         <Polyline
