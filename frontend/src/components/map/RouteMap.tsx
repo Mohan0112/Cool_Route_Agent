@@ -45,7 +45,7 @@ export function RouteMap({ options, originLabel, destinationLabel, height = 420 
 
   const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY
   const tileUrl = cartoApiKey
-    ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${cartoApiKey}`
+    ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${cartoApiKey}`
     : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
 
   return (
