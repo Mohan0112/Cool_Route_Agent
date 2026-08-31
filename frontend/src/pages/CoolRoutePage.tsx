@@ -120,6 +120,8 @@ export function CoolRoutePage() {
                   type="datetime-local"
                   value={customTime}
                   onChange={(e) => setCustomTime(e.target.value)}
+                  min="2021-01-01T00:00"
+                  max={new Date(Date.now() + 12 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
                   className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]"
                 />
               )}
