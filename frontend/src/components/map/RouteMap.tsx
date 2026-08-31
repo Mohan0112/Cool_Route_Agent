@@ -43,6 +43,11 @@ export function RouteMap({ options, originLabel, destinationLabel, height = 420 
     ]
   }, [options])
 
+  const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY
+  const tileUrl = cartoApiKey
+    ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${cartoApiKey}`
+    : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+
   return (
     <MapContainer
       center={bounds ? undefined : DEFAULT_CENTER}
@@ -53,7 +58,7 @@ export function RouteMap({ options, originLabel, destinationLabel, height = 420 
       style={{ height, width: "100%" }}
     >
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        url={tileUrl}
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
       />
       {options.map((option, i) => (
