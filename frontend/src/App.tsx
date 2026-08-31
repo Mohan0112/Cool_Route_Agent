@@ -13,7 +13,7 @@ function App() {
         <CoolRoutePage />
       </div>
       <footer className="border-t border-[var(--border)] py-4 text-center text-xs text-[var(--text-muted)]">
-        Powered by Google Gemini &middot; FortyGuard Temperature API &middot; Google Maps &middot; OSRM
+        Powered by Google Gemini &middot; FortyGuard Temperature API &middot; OSRM &middot; CARTO/OpenStreetMap
       </footer>
     </div>
   )

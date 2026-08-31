@@ -6,7 +6,7 @@ Built for **FortyGuard Hackathon'26 — Track 6 (Agentic Track)**. Give it an or
 and a travel mode (walking, cycling, or driving), and a single autonomous agent geocodes both
 ends, pulls real street-level route alternatives, measures real temperature and solar-irradiance
 data along every candidate route, and recommends which one to actually take — labeling the
-options **Fastest**, **Coolest**, and **Balanced** the way Google Maps labels its own alternatives.
+options **Fastest**, **Coolest**, and **Balanced**.
 
 It's aimed at people for whom "fastest" isn't the only thing that matters in the heat: delivery
 drivers and couriers, people walking or biking to work, and anyone planning to be outside for a
@@ -31,7 +31,7 @@ flowchart LR
     A -->|get_route_alternatives| O[OSRM<br/>per-mode routing]
     A -->|estimate_route_heat| F[FortyGuard Temperature API<br/>heatmap + env_params]
     A -->|submit_route_plan| R[Ranked routes:<br/>Fastest / Coolest / Balanced]
-    R --> M[React + Google Maps<br/>route visualization]
+    R --> M[React-Leaflet + CARTO Map<br/>route visualization]
 ```
 
 1. **Geocode** — both addresses resolved via Nominatim (free, keyless OpenStreetMap search).
@@ -44,8 +44,8 @@ flowchart LR
 4. **Decide** — the agent weighs both signals, labels the real alternatives it was given (never
    inventing a route), and returns a structured plan with a concrete measured outcome, a risk
    category + safety tip per route, and the FortyGuard/OSRM call IDs it used as sources.
-5. **Visualize** — routes are rendered on an interactive Google Maps view with color-coded
-   polylines, origin/destination markers, and click-to-inspect info windows.
+5. **Visualize** — routes are rendered on an interactive map view (via React-Leaflet and CARTO Voyager tiles) with color-coded
+   polylines, origin/destination markers, and click-to-inspect popups.
 
 Optionally, the agent can also compare a handful of departure times on the same day (e.g. 9am vs
 noon vs 3pm vs 6pm) and highlight the coolest time to leave.
@@ -59,7 +59,7 @@ noon vs 3pm vs 6pm) and highlight the coolest time to leave.
 | Routing | OSRM (openstreetmap.de per-mode demo servers) |
 | Geocoding | Nominatim (OpenStreetMap) |
 | Heat data | [FortyGuard Temperature API](https://www.fortyguard.com) (`create_heatmap`, `env_params`) |
-| Frontend | React 19 + TypeScript, Vite, Tailwind CSS, Google Maps (`@react-google-maps/api`) |
+| Frontend | React 19 + TypeScript, Vite, Tailwind CSS, Leaflet (`react-leaflet`), CARTO Voyager map tiles |
 | Persistence | SQLite (agent run/event history + response cache) |
 
 ## Project structure
@@ -75,7 +75,7 @@ backend/
   tests/             pytest suite (geometry, validation, agent logic -- no network calls)
 frontend/
   src/
-    components/      Google Maps route view, route-plan view, UI kit
+    components/      Map route view, route-plan view, UI kit
     hooks/           SSE agent-stream hook
     lib/             typed API client, SSE parser, shared types
     pages/           the single CoolRoute page
@@ -85,8 +85,7 @@ render.yaml          Render Blueprint (deploys both services together)
 ## Running locally
 
 **Requirements:** Python 3.12+, Node 20+, a [FortyGuard API key](https://www.fortyguard.com),
-a [Gemini API key](https://ai.google.dev/), and a
-[Google Maps API key](https://console.cloud.google.com/apis/credentials) (all free to obtain).
+and a [Gemini API key](https://ai.google.dev/) (both free to obtain).
 
 ### Backend
 
@@ -105,7 +104,7 @@ Runs on `http://127.0.0.1:8000`.
 ```bash
 cd frontend
 npm install
-copy .env.example .env    # or `cp` on macOS/Linux -- then add your Google Maps API key
+copy .env.example .env    # or `cp` on macOS/Linux
 npm run dev
 ```
 
@@ -126,7 +125,6 @@ extra configuration needed locally.
 
 | Variable | Required | Description |
 |---|---|---|
-| `VITE_GOOGLE_MAPS_API_KEY` | ✅ | Google Maps JavaScript API key |
 | `VITE_API_BASE_URL` | — | Leave empty for local dev; set for production |
 
 ### Tests
@@ -149,7 +147,6 @@ service) and frontend (static site) together as two linked services.
    it at your GitHub repo. Render will read `render.yaml` and propose both services.
 3. Before deploying, set the secret env vars:
    - On **coolroute-api**: `FORTYGUARD_API_KEY` and `GEMINI_API_KEY`
-   - On **coolroute-app**: `VITE_GOOGLE_MAPS_API_KEY`
 4. Deploy. Render builds and starts both services; the static site is pre-configured to call the
    API service's URL via `VITE_API_BASE_URL`, and the API service's `CORS_ORIGINS` is
    pre-configured to allow the static site's origin.
@@ -179,4 +176,4 @@ capped at ~130 km² (route corridors auto-shrink their width to stay under this 
 
 Agent reasoning and tool orchestration are powered by **Google Gemini** (`gemini-flash-lite-latest`
 by default) via the `google-genai` SDK, using a manual function-calling loop (not a third-party
-agent framework). Map visualization uses the **Google Maps JavaScript API**.
+agent framework). Map visualization uses **React-Leaflet** with free **CARTO** tiles.
