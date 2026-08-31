@@ -48,7 +48,7 @@ export function RoutePlanView({ plan }: { plan: CoolRoutePlan }) {
                 rel="noreferrer"
                 className="ml-auto text-xs font-medium text-[var(--accent)] hover:underline"
               >
-                Open in Google Maps &nearr;
+                Open in Google Maps ↗
               </a>
               <div className="w-full h-0 border-0" /> {/* Force wrap for the badges below */}
               <Badge tone="neutral">{option.distance_km.toFixed(1)} km</Badge>
