@@ -96,34 +96,39 @@ export function CoolRoutePage() {
               ))}
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setUseCustomTime(false)}
-                className={clsx(
-                  "rounded-full px-3 py-1 text-xs font-medium",
-                  !useCustomTime ? "bg-[var(--accent-bg)] text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text)]"
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setUseCustomTime(false)}
+                  className={clsx(
+                    "rounded-full px-3 py-1 text-xs font-medium",
+                    !useCustomTime ? "bg-[var(--accent-bg)] text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                  )}
+                >
+                  Now
+                </button>
+                <button
+                  onClick={() => setUseCustomTime(true)}
+                  className={clsx(
+                    "rounded-full px-3 py-1 text-xs font-medium",
+                    useCustomTime ? "bg-[var(--accent-bg)] text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                  )}
+                >
+                  Choose time
+                </button>
+                {useCustomTime && (
+                  <input
+                    type="datetime-local"
+                    value={customTime}
+                    onChange={(e) => setCustomTime(e.target.value)}
+                    className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]"
+                  />
                 )}
-              >
-                Now
-              </button>
-              <button
-                onClick={() => setUseCustomTime(true)}
-                className={clsx(
-                  "rounded-full px-3 py-1 text-xs font-medium",
-                  useCustomTime ? "bg-[var(--accent-bg)] text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text)]"
-                )}
-              >
-                Choose time
-              </button>
+              </div>
               {useCustomTime && (
-                <input
-                  type="datetime-local"
-                  value={customTime}
-                  onChange={(e) => setCustomTime(e.target.value)}
-                  min="2021-01-01T00:00"
-                  max={new Date(Date.now() + 12 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
-                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]"
-                />
+                <span className="text-[10px] text-[var(--text-muted)] ml-2">
+                  * Forecasts only available up to 12 hours ahead.
+                </span>
               )}
             </div>
 

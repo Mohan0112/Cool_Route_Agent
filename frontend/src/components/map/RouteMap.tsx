@@ -60,7 +60,9 @@ export function RouteMap({ options, originLabel, destinationLabel, height = 420 
         <Polyline
           key={option.route_id}
           positions={option.geometry}
-          pathOptions={{ color: routeColor(option.label, i), weight: 5, opacity: 0.85 }}
+          color={routeColor(option.label, i)}
+          weight={5}
+          opacity={0.85}
         >
           <Popup>
             <strong>{option.label}</strong>
@@ -84,12 +86,12 @@ export function RouteMap({ options, originLabel, destinationLabel, height = 420 
         </Polyline>
       ))}
       {origin && (
-        <CircleMarker center={origin} radius={8} pathOptions={{ color: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.9 }}>
+        <CircleMarker center={origin} radius={8} color="#16a34a" fillColor="#16a34a" fillOpacity={0.9}>
           <Popup>Start: {originLabel ?? "Origin"}</Popup>
         </CircleMarker>
       )}
       {destination && (
-        <CircleMarker center={destination} radius={8} pathOptions={{ color: "#dc2626", fillColor: "#dc2626", fillOpacity: 0.9 }}>
+        <CircleMarker center={destination} radius={8} color="#dc2626" fillColor="#dc2626" fillOpacity={0.9}>
           <Popup>End: {destinationLabel ?? "Destination"}</Popup>
         </CircleMarker>
       )}
