@@ -3,8 +3,7 @@ import { clsx } from "clsx"
 import { PageShell } from "@/components/layout/PageShell"
 import { Card, CardHeader, CardBody } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { TraceTimeline } from "@/components/trace/TraceTimeline"
-import { StatusBadge } from "@/components/trace/StatusBadge"
+
 import { RouteMap } from "@/components/map/RouteMap"
 import { RoutePlanView } from "@/components/agent-results/RoutePlanView"
 import { Markdown } from "@/components/ui/Markdown"
@@ -162,7 +161,6 @@ export function CoolRoutePage() {
                 Cancel
               </Button>
             )}
-            <StatusBadge status={stream.status} />
           </div>
           {stream.errorMessage && <p className="text-sm text-[var(--danger)]">{stream.errorMessage}</p>}
         </CardBody>
@@ -209,14 +207,6 @@ export function CoolRoutePage() {
         </Card>
       </div>
 
-      <Card className="mt-6">
-        <CardHeader>
-          <h2 className="text-sm font-semibold">Agent reasoning (auditable trace)</h2>
-        </CardHeader>
-        <CardBody>
-          <TraceTimeline events={stream.events} />
-        </CardBody>
-      </Card>
     </PageShell>
   )
 }

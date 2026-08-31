@@ -31,7 +31,7 @@ flowchart LR
     A -->|get_route_alternatives| O[OSRM<br/>per-mode routing]
     A -->|estimate_route_heat| F[FortyGuard Temperature API<br/>heatmap + env_params]
     A -->|submit_route_plan| R[Ranked routes:<br/>Fastest / Coolest / Balanced]
-    R --> M[React + Leaflet map<br/>+ live reasoning trace]
+    R --> M[React + Google Maps<br/>route visualization]
 ```
 
 1. **Geocode** — both addresses resolved via Nominatim (free, keyless OpenStreetMap search).
@@ -44,8 +44,8 @@ flowchart LR
 4. **Decide** — the agent weighs both signals, labels the real alternatives it was given (never
    inventing a route), and returns a structured plan with a concrete measured outcome, a risk
    category + safety tip per route, and the FortyGuard/OSRM call IDs it used as sources.
-5. **Show the work** — every tool call and result streams live to the UI as an auditable trace,
-   not just a final answer.
+5. **Visualize** — routes are rendered on an interactive Google Maps view with color-coded
+   polylines, origin/destination markers, and click-to-inspect info windows.
 
 Optionally, the agent can also compare a handful of departure times on the same day (e.g. 9am vs
 noon vs 3pm vs 6pm) and highlight the coolest time to leave.
@@ -59,7 +59,7 @@ noon vs 3pm vs 6pm) and highlight the coolest time to leave.
 | Routing | OSRM (openstreetmap.de per-mode demo servers) |
 | Geocoding | Nominatim (OpenStreetMap) |
 | Heat data | [FortyGuard Temperature API](https://www.fortyguard.com) (`create_heatmap`, `env_params`) |
-| Frontend | React 19 + TypeScript, Vite, Tailwind CSS, React-Leaflet |
+| Frontend | React 19 + TypeScript, Vite, Tailwind CSS, Google Maps (`@react-google-maps/api`) |
 | Persistence | SQLite (agent run/event history + response cache) |
 
 ## Project structure
@@ -68,15 +68,15 @@ noon vs 3pm vs 6pm) and highlight the coolest time to leave.
 backend/
   app/
     agents/         AgentRunner engine + the CoolRoute agent (system prompt, tools)
-    fortyguard/      FortyGuard API client, validation, caching, demo-mode fixtures
+    fortyguard/      FortyGuard API client, validation, caching
     routing/         OSRM + Nominatim client, route-corridor geometry helpers
     routes/          FastAPI routers (coolroute run/replay, health)
     storage/         SQLite schema + repositories
   tests/             pytest suite (geometry, validation, agent logic -- no network calls)
 frontend/
   src/
-    components/      map, route-plan view, trace timeline, UI kit
-    hooks/           SSE agent-stream hook, usage/credits hook
+    components/      Google Maps route view, route-plan view, UI kit
+    hooks/           SSE agent-stream hook
     lib/             typed API client, SSE parser, shared types
     pages/           the single CoolRoute page
 render.yaml          Render Blueprint (deploys both services together)
@@ -84,8 +84,9 @@ render.yaml          Render Blueprint (deploys both services together)
 
 ## Running locally
 
-**Requirements:** Python 3.12+, Node 20+, a [FortyGuard API key](https://www.fortyguard.com) and
-a [Gemini API key](https://ai.google.dev/) (both free to obtain).
+**Requirements:** Python 3.12+, Node 20+, a [FortyGuard API key](https://www.fortyguard.com),
+a [Gemini API key](https://ai.google.dev/), and a
+[Google Maps API key](https://console.cloud.google.com/apis/credentials) (all free to obtain).
 
 ### Backend
 
@@ -97,20 +98,36 @@ copy .env.example .env    # or `cp` on macOS/Linux -- then fill in your API keys
 uvicorn app.main:app --reload
 ```
 
-Runs on `http://127.0.0.1:8000`. Leave `DEMO_MODE=true` in `.env` to run entirely on bundled
-fixtures (zero FortyGuard credits spent, no key required for that endpoint) while developing the
-UI; flip it to `false` once your FortyGuard key is in place.
+Runs on `http://127.0.0.1:8000`.
 
 ### Frontend
 
 ```bash
 cd frontend
 npm install
+copy .env.example .env    # or `cp` on macOS/Linux -- then add your Google Maps API key
 npm run dev
 ```
 
 Runs on `http://localhost:5173` and proxies `/api/*` to the backend automatically in dev — no
 extra configuration needed locally.
+
+### Environment variables
+
+**Backend (`.env`):**
+
+| Variable | Required | Description |
+|---|---|---|
+| `FORTYGUARD_API_KEY` | ✅ | FortyGuard Temperature API key |
+| `GEMINI_API_KEY` | ✅ | Google Gemini API key |
+| `DEMO_MODE` | — | Set to `false` for live API calls (default: `false`) |
+
+**Frontend (`.env`):**
+
+| Variable | Required | Description |
+|---|---|---|
+| `VITE_GOOGLE_MAPS_API_KEY` | ✅ | Google Maps JavaScript API key |
+| `VITE_API_BASE_URL` | — | Leave empty for local dev; set for production |
 
 ### Tests
 
@@ -130,10 +147,9 @@ service) and frontend (static site) together as two linked services.
 1. Push this repo to GitHub.
 2. In the [Render dashboard](https://dashboard.render.com), click **New → Blueprint** and point
    it at your GitHub repo. Render will read `render.yaml` and propose both services.
-3. Before deploying, set the two secret env vars on the **coolroute-api** service (Render will
-   prompt for these since they're marked `sync: false` in the blueprint):
-   - `FORTYGUARD_API_KEY`
-   - `GEMINI_API_KEY`
+3. Before deploying, set the secret env vars:
+   - On **coolroute-api**: `FORTYGUARD_API_KEY` and `GEMINI_API_KEY`
+   - On **coolroute-app**: `VITE_GOOGLE_MAPS_API_KEY`
 4. Deploy. Render builds and starts both services; the static site is pre-configured to call the
    API service's URL via `VITE_API_BASE_URL`, and the API service's `CORS_ORIGINS` is
    pre-configured to allow the static site's origin.
@@ -143,23 +159,16 @@ pick different ones when creating the blueprint, then update two values to match
 service's `CORS_ORIGINS` env var, and the static site's `VITE_API_BASE_URL` env var — both need
 to point at each other's actual `*.onrender.com` URL.
 
-**Manual setup (without the blueprint)** works the same way: create a Python web service rooted
-at `backend/` with build command `pip install -r requirements.txt` and start command
-`uvicorn app.main:app --host 0.0.0.0 --port $PORT`, and a static site rooted at `frontend/` with
-build command `npm install && npm run build` and publish directory `dist`. Set the env vars from
-`backend/.env.example` and `frontend/.env.example` on the respective services.
-
 Render's free-tier web services spin down after inactivity, so the first request after idle can
 take up to ~30s to cold-start.
 
 ## FortyGuard endpoints used
 
-- `POST /v1/create_heatmap` (`analytic_type=tcm`) — measured temperature statistics over each
+- `POST /v1/heatmap` (`analytic_type=tcm`) — measured temperature statistics over each
   route's corridor polygon.
 - `POST /v1/env_params` — point-level temperature, heat index, AQI, and solar irradiance, sampled
   at a few points along each route.
-- `POST /v1/system/fetch-api-key-usage` — shown in the UI as a live demo-mode/live-mode +
-  remaining-credits badge.
+- `POST /v1/system/fetch-api-key-usage` — check credit balance.
 
 **Data constraints (enforced client-side before any call is made):** U.S. locations only; dates
 from 2021-01-01 through today; heatmap requests additionally allow forecasting up to **12 hours**
@@ -170,5 +179,4 @@ capped at ~130 km² (route corridors auto-shrink their width to stay under this 
 
 Agent reasoning and tool orchestration are powered by **Google Gemini** (`gemini-flash-lite-latest`
 by default) via the `google-genai` SDK, using a manual function-calling loop (not a third-party
-agent framework) so every tool call and result can be persisted and streamed live to the UI as an
-auditable trace.
+agent framework). Map visualization uses the **Google Maps JavaScript API**.

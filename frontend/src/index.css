@@ -73,18 +73,6 @@ body {
   background: var(--accent-bg);
 }
 
-.leaflet-container {
-  background: var(--surface-2);
-  /* No border-radius here on purpose: the map now fills a card that clips with
-     overflow-hidden + rounded-2xl, and a second, tighter radius left visible crescents
-     of card background in each corner. */
-  /* Leaflet gives its own panes and controls z-index 400-800. .leaflet-container is
-     positioned but has z-index:auto, so it creates NO stacking context and those values
-     compete with the rest of the page -- which is how the map ended up painting on top of
-     the sticky NavBar. Pinning it to 0 traps every internal z-index inside the map. */
-  z-index: 0;
-  isolation: isolate;
-}
 
 /* --- Landing hero animations (referenced by inline styles in Hero.tsx) ------------- */
 
