@@ -41,7 +41,16 @@ export function RoutePlanView({ plan }: { plan: CoolRoutePlan }) {
           <div key={option.route_id} className="rounded-xl border border-[var(--border)] p-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: routeColor(option.label, i) }} />
-              <span className="font-semibold text-[var(--text)]">{option.label}</span>
+              <span className="font-semibold text-[var(--text)] flex-1">{option.label}</span>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(plan.origin_label)}&destination=${encodeURIComponent(plan.destination_label)}&travelmode=${plan.mode === "cycling" ? "bicycling" : plan.mode}`}
+                target="_blank"
+                rel="noreferrer"
+                className="ml-auto text-xs font-medium text-[var(--accent)] hover:underline"
+              >
+                Open in Google Maps &nearr;
+              </a>
+              <div className="w-full h-0 border-0" /> {/* Force wrap for the badges below */}
               <Badge tone="neutral">{option.distance_km.toFixed(1)} km</Badge>
               <Badge tone="neutral">{option.duration_min.toFixed(0)} min</Badge>
               <Badge tone="accent">mean {option.mean_temp_c.toFixed(1)}&deg;C</Badge>
